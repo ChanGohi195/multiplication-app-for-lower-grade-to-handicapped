@@ -8,13 +8,14 @@ import { My } from './components/My';
 import { Result } from './components/Result';
 import { Leaderboard } from './components/Leaderboard';
 
-type Screen = 'login' | 'welcome' | 'home' | 'dan-selection' | 'practice' | 'my' | 'result' | 'leaderboard';
+type Screen = 'login' | 'welcome' | 'home' | 'dan-selection' | 'practice' | 'weak-practice' | 'my' | 'result' | 'leaderboard';
 
 interface Stats {
   todayCount: number;
   consecutiveDays: number;
   lastDate: string;
   danMistakes: Record<number, number>;
+  problemMistakes: Record<string, number>; // e.g., "3x7": 5
   totalScore: number;
   highScore: number;
 }
@@ -32,6 +33,7 @@ export default function App() {
     consecutiveDays: 0,
     lastDate: new Date().toDateString(),
     danMistakes: {},
+    problemMistakes: {},
     totalScore: 0,
     highScore: 0
   });
@@ -65,6 +67,7 @@ export default function App() {
             consecutiveDays: wasYesterday ? parsed.consecutiveDays + 1 : 1,
             lastDate: today,
             danMistakes: parsed.danMistakes || {},
+            problemMistakes: parsed.problemMistakes || {},
             totalScore: parsed.totalScore || 0,
             highScore: parsed.highScore || 0
           };
@@ -144,18 +147,46 @@ export default function App() {
       consecutiveDays: 0,
       lastDate: new Date().toDateString(),
       danMistakes: {},
+      problemMistakes: {},
       totalScore: 0,
       highScore: 0
     });
     setScreen('login');
   };
 
+  const handleMistake = (dan: number, num2: number) => {
+    const problemKey = `${dan}x${num2}`;
+
+    setStats(prev => ({
+      ...prev,
+      danMistakes: {
+        ...prev.danMistakes,
+        [dan]: (prev.danMistakes[dan] || 0) + 1
+      },
+      problemMistakes: {
+        ...prev.problemMistakes,
+        [problemKey]: (prev.problemMistakes[problemKey] || 0) + 1
+      }
+    }));
+  };
+
   const getWeakDans = () => {
     const dans = Object.entries(stats.danMistakes)
       .map(([dan, mistakes]) => ({ dan: parseInt(dan), mistakes }))
       .sort((a, b) => b.mistakes - a.mistakes);
-    
+
     return dans;
+  };
+
+  const getWeakProblems = () => {
+    const problems = Object.entries(stats.problemMistakes)
+      .map(([problem, mistakes]) => {
+        const [dan, num2] = problem.split('x').map(n => parseInt(n));
+        return { dan, num2, problem, mistakes };
+      })
+      .sort((a, b) => b.mistakes - a.mistakes);
+
+    return problems;
   };
 
   return (
@@ -185,12 +216,13 @@ export default function App() {
               />
             )}
             {screen === 'home' && (
-              <Home 
+              <Home
                 onStartAll={() => {
                   setSelectedDans([]);
                   setScreen('practice');
                 }}
                 onStartSelect={() => setScreen('dan-selection')}
+                onStartWeakProblems={() => setScreen('weak-practice')}
                 onMyRecord={() => setScreen('my')}
                 onLeaderboard={() => setScreen('leaderboard')}
               />
@@ -205,10 +237,21 @@ export default function App() {
               />
             )}
             {screen === 'practice' && (
-              <Practice 
+              <Practice
                 onComplete={handlePracticeComplete}
                 onBack={() => setScreen('home')}
                 selectedDans={selectedDans.length > 0 ? selectedDans : undefined}
+                onMistake={handleMistake}
+              />
+            )}
+            {screen === 'weak-practice' && (
+              <Practice
+                onComplete={handlePracticeComplete}
+                onBack={() => setScreen('home')}
+                specificProblems={getWeakProblems().length > 0
+                  ? getWeakProblems().map(p => ({ dan: p.dan, num2: p.num2 }))
+                  : undefined}
+                onMistake={handleMistake}
               />
             )}
             {screen === 'result' && (
@@ -221,11 +264,12 @@ export default function App() {
               />
             )}
             {screen === 'my' && user && (
-              <My 
+              <My
                 stats={{
                   todayCount: stats.todayCount,
                   consecutiveDays: stats.consecutiveDays,
-                  weakDans: getWeakDans()
+                  weakDans: getWeakDans(),
+                  weakProblems: getWeakProblems()
                 }}
                 userId={user.userId}
                 nickname={user.nickname}

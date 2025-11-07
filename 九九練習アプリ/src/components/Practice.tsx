@@ -5,9 +5,11 @@ interface PracticeProps {
   onComplete: (correctCount: number, score: number, maxCombo: number) => void;
   onBack: () => void;
   selectedDans?: number[]; // If provided, only generate problems from these dans
+  specificProblems?: { dan: number; num2: number }[]; // If provided, only these specific problems
+  onMistake?: (dan: number, num2: number) => void; // Called when user answers incorrectly
 }
 
-export function Practice({ onComplete, onBack, selectedDans }: PracticeProps) {
+export function Practice({ onComplete, onBack, selectedDans, specificProblems, onMistake }: PracticeProps) {
   const [dan, setDan] = useState(3);
   const [num2, setNum2] = useState(0);
   const [correctAnswer, setCorrectAnswer] = useState(0);
@@ -58,15 +60,24 @@ export function Practice({ onComplete, onBack, selectedDans }: PracticeProps) {
   }, []);
 
   const generateNewProblem = () => {
-    // Generate dan from selected dans or all dans (1-9)
     let newDan: number;
-    if (selectedDans && selectedDans.length > 0) {
+    let newNum2: number;
+
+    // If specific problems are provided, use them
+    if (specificProblems && specificProblems.length > 0) {
+      const problem = specificProblems[Math.floor(Math.random() * specificProblems.length)];
+      newDan = problem.dan;
+      newNum2 = problem.num2;
+    }
+    // Otherwise, generate dan from selected dans or all dans (1-9)
+    else if (selectedDans && selectedDans.length > 0) {
       newDan = selectedDans[Math.floor(Math.random() * selectedDans.length)];
+      newNum2 = Math.floor(Math.random() * 9) + 1;
     } else {
       newDan = Math.floor(Math.random() * 9) + 1;
+      newNum2 = Math.floor(Math.random() * 9) + 1;
     }
-    
-    const newNum2 = Math.floor(Math.random() * 9) + 1;
+
     const answer = newDan * newNum2;
     
     setDan(newDan);
@@ -139,16 +150,21 @@ export function Practice({ onComplete, onBack, selectedDans }: PracticeProps) {
       }, 300);
     } else {
       setFeedback('incorrect');
-      
+
+      // Record the mistake
+      if (onMistake) {
+        onMistake(dan, num2);
+      }
+
       // Reset consecutive correct count
       setConsecutiveCorrect(0);
-      
+
       // Penalty: -3 levels
       setComboLevel(prev => Math.max(prev - 3, 0));
-      
+
       // Time penalty: -5 seconds
       setTimeLeft(prev => Math.max(prev - 5, 0));
-      
+
       setTimeout(() => {
         setFeedback('none');
         setSelectedChoice(null);

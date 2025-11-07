@@ -5,6 +5,7 @@ interface MyProps {
     todayCount: number;
     consecutiveDays: number;
     weakDans: { dan: number; mistakes: number }[];
+    weakProblems: { dan: number; num2: number; problem: string; mistakes: number }[];
   };
   userId: string;
   nickname: string;
@@ -104,20 +105,20 @@ export function My({ stats, userId, nickname, onBack, onLogout }: MyProps) {
             </div>
 
             {/* Weak Dans */}
-            <div 
+            <div
               className="rounded-3xl p-6"
               style={{ backgroundColor: '#FFFFFF' }}
             >
-              <div 
+              <div
                 className="text-center mb-4"
                 style={{ fontSize: '18px', color: '#333333' }}
               >
-                にがて トップ3
+                にがての だん トップ3
               </div>
               <div className="space-y-3">
                 {stats.weakDans.length > 0 ? (
                   stats.weakDans.slice(0, 3).map((item, index) => (
-                    <div 
+                    <div
                       key={index}
                       className="flex items-center justify-between rounded-xl p-4"
                       style={{ backgroundColor: '#F9F9F6' }}
@@ -131,7 +132,45 @@ export function My({ stats, userId, nickname, onBack, onLogout }: MyProps) {
                     </div>
                   ))
                 ) : (
-                  <div 
+                  <div
+                    className="text-center py-4"
+                    style={{ fontSize: '16px', color: '#999999' }}
+                  >
+                    まだ データが ありません
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Weak Problems */}
+            <div
+              className="rounded-3xl p-6"
+              style={{ backgroundColor: '#FFFFFF' }}
+            >
+              <div
+                className="text-center mb-4"
+                style={{ fontSize: '18px', color: '#333333' }}
+              >
+                にがての もんだい トップ5
+              </div>
+              <div className="space-y-3">
+                {stats.weakProblems.length > 0 ? (
+                  stats.weakProblems.slice(0, 5).map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-xl p-4"
+                      style={{ backgroundColor: '#F9F9F6' }}
+                    >
+                      <div style={{ fontSize: '20px', color: '#333333' }}>
+                        {item.dan} × {item.num2}
+                      </div>
+                      <div style={{ fontSize: '18px', color: '#F5977A' }}>
+                        {item.mistakes}かい
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div
                     className="text-center py-4"
                     style={{ fontSize: '16px', color: '#999999' }}
                   >

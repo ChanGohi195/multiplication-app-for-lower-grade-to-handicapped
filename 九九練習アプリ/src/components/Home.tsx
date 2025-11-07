@@ -1,11 +1,13 @@
-export function Home({ 
-  onStartAll, 
+export function Home({
+  onStartAll,
   onStartSelect,
+  onStartWeakProblems,
   onMyRecord,
   onLeaderboard
-}: { 
+}: {
   onStartAll: () => void;
   onStartSelect: () => void;
+  onStartWeakProblems: () => void;
   onMyRecord: () => void;
   onLeaderboard: () => void;
 }) {
@@ -34,7 +36,7 @@ export function Home({
           <button
             onClick={onStartSelect}
             className="w-full rounded-2xl active:scale-95 transition-transform"
-            style={{ 
+            style={{
               height: '72px',
               backgroundColor: '#F6C744',
               color: '#333333',
@@ -43,7 +45,20 @@ export function Home({
           >
             だんを えらぶ
           </button>
-          
+
+          <button
+            onClick={onStartWeakProblems}
+            className="w-full rounded-2xl active:scale-95 transition-transform"
+            style={{
+              height: '72px',
+              backgroundColor: '#F5977A',
+              color: '#FFFFFF',
+              fontSize: '22px'
+            }}
+          >
+            にがてな もんだい
+          </button>
+
           <div className="flex gap-3">
             <button
               onClick={onMyRecord}
