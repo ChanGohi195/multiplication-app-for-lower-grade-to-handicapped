@@ -7,6 +7,7 @@ import { Practice } from './components/Practice';
 import { My } from './components/My';
 import { Result } from './components/Result';
 import { Leaderboard } from './components/Leaderboard';
+import { Review } from './components/Review';
 
 type Screen = 'login' | 'welcome' | 'home' | 'dan-selection' | 'practice' | 'weak-practice' | 'my' | 'result' | 'leaderboard' | 'review';
 
@@ -307,12 +308,25 @@ export default function App() {
                 nickname={user.nickname}
                 onBack={() => setScreen('home')}
                 onLogout={handleLogout}
+                onReview={() => setScreen('review')}
               />
             )}
             {screen === 'leaderboard' && user && (
               <Leaderboard
                 onBack={() => setScreen('home')}
                 currentUserId={user.userId}
+              />
+            )}
+            {screen === 'review' && (
+              <Review
+                stats={{
+                  totalProblems: stats.totalProblems,
+                  problemCorrect: stats.problemCorrect,
+                  problemMistakes: stats.problemMistakes,
+                  danCorrect: stats.danCorrect,
+                  danMistakes: stats.danMistakes
+                }}
+                onBack={() => setScreen('my')}
               />
             )}
           </div>

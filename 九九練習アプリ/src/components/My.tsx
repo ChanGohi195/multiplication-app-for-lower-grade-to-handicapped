@@ -11,9 +11,10 @@ interface MyProps {
   nickname: string;
   onBack: () => void;
   onLogout: () => void;
+  onReview: () => void;
 }
 
-export function My({ stats, userId, nickname, onBack, onLogout }: MyProps) {
+export function My({ stats, userId, nickname, onBack, onLogout, onReview }: MyProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showUserId, setShowUserId] = useState(false);
 
@@ -179,6 +180,20 @@ export function My({ stats, userId, nickname, onBack, onLogout }: MyProps) {
                 )}
               </div>
             </div>
+
+            {/* Review Button */}
+            <button
+              onClick={onReview}
+              className="w-full rounded-2xl active:scale-95 transition-transform"
+              style={{
+                height: '64px',
+                backgroundColor: '#4A90E2',
+                color: '#FFFFFF',
+                fontSize: '18px'
+              }}
+            >
+              📊 くわしく ふりかえる
+            </button>
           </div>
 
           {/* Encouragement */}
