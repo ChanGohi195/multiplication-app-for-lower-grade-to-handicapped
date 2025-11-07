@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+九九練習アプリ/node_modules/
+
+# Build output
+build/
+dist/
+九九練習アプリ/build/
+九九練習アプリ/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
