@@ -7,9 +7,10 @@ interface PracticeProps {
   selectedDans?: number[]; // If provided, only generate problems from these dans
   specificProblems?: { dan: number; num2: number }[]; // If provided, only these specific problems
   onMistake?: (dan: number, num2: number) => void; // Called when user answers incorrectly
+  onCorrect?: (dan: number, num2: number) => void; // Called when user answers correctly
 }
 
-export function Practice({ onComplete, onBack, selectedDans, specificProblems, onMistake }: PracticeProps) {
+export function Practice({ onComplete, onBack, selectedDans, specificProblems, onMistake, onCorrect }: PracticeProps) {
   const [dan, setDan] = useState(3);
   const [num2, setNum2] = useState(0);
   const [correctAnswer, setCorrectAnswer] = useState(0);
@@ -114,11 +115,16 @@ export function Practice({ onComplete, onBack, selectedDans, specificProblems, o
     if (choice === correctAnswer) {
       setFeedback('correct');
       setCorrectCount(prev => prev + 1);
-      
+
+      // Record the correct answer
+      if (onCorrect) {
+        onCorrect(dan, num2);
+      }
+
       // Increase consecutive correct count
       const newConsecutiveCorrect = consecutiveCorrect + 1;
       setConsecutiveCorrect(newConsecutiveCorrect);
-      
+
       // Level up every 2 correct answers
       let newComboLevel = comboLevel;
       let leveledUp = false;
@@ -129,21 +135,21 @@ export function Practice({ onComplete, onBack, selectedDans, specificProblems, o
         setConsecutiveCorrect(0);
         leveledUp = true;
       }
-      
+
       // Calculate score gain
       const scoreGain = getScoreForLevel(newComboLevel);
       setScore(prev => prev + scoreGain);
-      
+
       // Show score popup
       setScorePopup({ points: scoreGain, show: true });
       setTimeout(() => setScorePopup({ points: 0, show: false }), 800);
-      
+
       // Show combo up effect only when leveled up
       if (leveledUp) {
         setComboUpEffect(true);
         setTimeout(() => setComboUpEffect(false), 500);
       }
-      
+
       // Immediately generate next problem - no delay
       setTimeout(() => {
         generateNewProblem();

@@ -8,7 +8,7 @@ import { My } from './components/My';
 import { Result } from './components/Result';
 import { Leaderboard } from './components/Leaderboard';
 
-type Screen = 'login' | 'welcome' | 'home' | 'dan-selection' | 'practice' | 'weak-practice' | 'my' | 'result' | 'leaderboard';
+type Screen = 'login' | 'welcome' | 'home' | 'dan-selection' | 'practice' | 'weak-practice' | 'my' | 'result' | 'leaderboard' | 'review';
 
 interface Stats {
   todayCount: number;
@@ -16,8 +16,11 @@ interface Stats {
   lastDate: string;
   danMistakes: Record<number, number>;
   problemMistakes: Record<string, number>; // e.g., "3x7": 5
+  problemCorrect: Record<string, number>; // e.g., "3x7": 10 (正解数)
+  danCorrect: Record<number, number>; // 段ごとの正解数
   totalScore: number;
   highScore: number;
+  totalProblems: number; // 総問題数
 }
 
 interface UserData {
@@ -34,8 +37,11 @@ export default function App() {
     lastDate: new Date().toDateString(),
     danMistakes: {},
     problemMistakes: {},
+    problemCorrect: {},
+    danCorrect: {},
     totalScore: 0,
-    highScore: 0
+    highScore: 0,
+    totalProblems: 0
   });
   const [lastGameResult, setLastGameResult] = useState({ correctCount: 0, score: 0, maxCombo: 0 });
   const [selectedDans, setSelectedDans] = useState<number[]>([]);
@@ -68,8 +74,11 @@ export default function App() {
             lastDate: today,
             danMistakes: parsed.danMistakes || {},
             problemMistakes: parsed.problemMistakes || {},
+            problemCorrect: parsed.problemCorrect || {},
+            danCorrect: parsed.danCorrect || {},
             totalScore: parsed.totalScore || 0,
-            highScore: parsed.highScore || 0
+            highScore: parsed.highScore || 0,
+            totalProblems: parsed.totalProblems || 0
           };
           setStats(newStats);
           
@@ -148,8 +157,11 @@ export default function App() {
       lastDate: new Date().toDateString(),
       danMistakes: {},
       problemMistakes: {},
+      problemCorrect: {},
+      danCorrect: {},
       totalScore: 0,
-      highScore: 0
+      highScore: 0,
+      totalProblems: 0
     });
     setScreen('login');
   };
@@ -166,7 +178,25 @@ export default function App() {
       problemMistakes: {
         ...prev.problemMistakes,
         [problemKey]: (prev.problemMistakes[problemKey] || 0) + 1
-      }
+      },
+      totalProblems: prev.totalProblems + 1
+    }));
+  };
+
+  const handleCorrect = (dan: number, num2: number) => {
+    const problemKey = `${dan}x${num2}`;
+
+    setStats(prev => ({
+      ...prev,
+      danCorrect: {
+        ...prev.danCorrect,
+        [dan]: (prev.danCorrect[dan] || 0) + 1
+      },
+      problemCorrect: {
+        ...prev.problemCorrect,
+        [problemKey]: (prev.problemCorrect[problemKey] || 0) + 1
+      },
+      totalProblems: prev.totalProblems + 1
     }));
   };
 
@@ -242,6 +272,7 @@ export default function App() {
                 onBack={() => setScreen('home')}
                 selectedDans={selectedDans.length > 0 ? selectedDans : undefined}
                 onMistake={handleMistake}
+                onCorrect={handleCorrect}
               />
             )}
             {screen === 'weak-practice' && (
@@ -252,6 +283,7 @@ export default function App() {
                   ? getWeakProblems().map(p => ({ dan: p.dan, num2: p.num2 }))
                   : undefined}
                 onMistake={handleMistake}
+                onCorrect={handleCorrect}
               />
             )}
             {screen === 'result' && (

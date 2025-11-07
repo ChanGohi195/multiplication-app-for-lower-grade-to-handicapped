@@ -14,9 +14,20 @@ export function Login({ onLogin, onShowWelcome }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const hashPin = (pin: string): string => {
+    // Simple hash for PIN (SHA-256 would be better in production)
+    let hash = 0;
+    for (let i = 0; i < pin.length; i++) {
+      const char = pin.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return hash.toString(36);
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (nickname.trim().length === 0) {
       setError('ニックネームを いれてね');
       return;
@@ -36,9 +47,29 @@ export function Login({ onLogin, onShowWelcome }: LoginProps) {
     setError('');
 
     try {
-      const { registerUser } = await import('../utils/api');
-      const result = await registerUser(nickname.trim(), pin);
-      onShowWelcome(result.userId, result.nickname);
+      // Generate a unique user ID
+      const userId = 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+      const hashedPin = hashPin(pin);
+
+      // Save to localStorage
+      const userData = {
+        userId,
+        nickname: nickname.trim(),
+        pin: hashedPin,
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem(`kuku-user-${userId}`, JSON.stringify(userData));
+
+      // Try to register on server (optional)
+      try {
+        const { registerUser } = await import('../utils/api');
+        await registerUser(nickname.trim(), pin);
+      } catch (serverErr) {
+        console.log('Server registration failed (offline mode):', serverErr);
+      }
+
+      onShowWelcome(userId, nickname.trim());
     } catch (err) {
       console.error('Registration error:', err);
       setError('とうろく できませんでした');
@@ -49,7 +80,7 @@ export function Login({ onLogin, onShowWelcome }: LoginProps) {
 
   const handleRelogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (userId.trim().length === 0) {
       setError('ユーザーIDを いれてね');
       return;
@@ -64,14 +95,33 @@ export function Login({ onLogin, onShowWelcome }: LoginProps) {
     setError('');
 
     try {
-      const { verifyUserPin } = await import('../utils/api');
-      const result = await verifyUserPin(userId.trim(), pin);
-      
-      if (result.success) {
-        onLogin(result.userId, result.nickname);
-      } else {
-        setError('ユーザーIDか ばんごうが ちがいます');
+      // Check localStorage first
+      const storedData = localStorage.getItem(`kuku-user-${userId.trim()}`);
+
+      if (storedData) {
+        const userData = JSON.parse(storedData);
+        const hashedPin = hashPin(pin);
+
+        if (userData.pin === hashedPin) {
+          onLogin(userData.userId, userData.nickname);
+          return;
+        }
       }
+
+      // If not found locally, try server (optional)
+      try {
+        const { verifyUserPin } = await import('../utils/api');
+        const result = await verifyUserPin(userId.trim(), pin);
+
+        if (result.success) {
+          onLogin(result.userId, result.nickname);
+          return;
+        }
+      } catch (serverErr) {
+        console.log('Server verification failed:', serverErr);
+      }
+
+      setError('ユーザーIDか ばんごうが ちがいます');
     } catch (err) {
       console.error('Relogin error:', err);
       setError('ユーザーIDか ばんごうが ちがいます');
