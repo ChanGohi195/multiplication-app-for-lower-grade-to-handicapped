@@ -310,7 +310,7 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
         </div>
 
         {/* Choices */}
-        <div className="w-full max-w-[380px] md:max-w-full mt-12 md:mt-16">
+        <div className="w-full max-w-[380px] md:max-w-[900px] mt-12 md:mt-16">
           <div className="grid grid-cols-2 gap-4 md:gap-8 mb-4">
             {choices.map((choice, index) => (
               <button
@@ -334,7 +334,7 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
                 }`}
                 style={{
                   height: '120px',
-                  fontSize: '30px',
+                  fontSize: '35px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
