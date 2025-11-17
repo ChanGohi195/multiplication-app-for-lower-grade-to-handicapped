@@ -323,7 +323,7 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
                   }
                 }}
                 disabled={feedback !== 'none' || !isPlaying}
-                className={`rounded-2xl transition-all h-[110px] md:h-[480px] text-[36px] md:text-[80px] font-bold active:scale-95 ${
+                className={`rounded-2xl transition-all font-bold active:scale-95 ${
                   feedback === 'incorrect' && selectedChoice === choice
                     ? 'animate-wiggle'
                     : ''
@@ -333,6 +333,11 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
                     : ''
                 }`}
                 style={{
+                  height: '600px',
+                  fontSize: '120px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   backgroundColor:
                     feedback === 'correct' && selectedChoice === choice
                       ? '#F6C744'
