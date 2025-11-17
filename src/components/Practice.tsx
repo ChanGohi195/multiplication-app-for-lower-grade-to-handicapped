@@ -316,8 +316,14 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
               <button
                 key={index}
                 onClick={() => handleChoiceClick(choice)}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  if (feedback === 'none' && isPlaying) {
+                    handleChoiceClick(choice);
+                  }
+                }}
                 disabled={feedback !== 'none' || !isPlaying}
-                className={`rounded-2xl transition-all h-[110px] md:h-[240px] text-[36px] md:text-[64px] font-bold ${
+                className={`rounded-2xl transition-all h-[110px] md:h-[480px] text-[36px] md:text-[80px] font-bold active:scale-95 ${
                   feedback === 'incorrect' && selectedChoice === choice
                     ? 'animate-wiggle'
                     : ''
@@ -334,7 +340,10 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
                       ? '#F5977A'
                       : '#FFFFFF',
                   color: '#333333',
-                  border: '2px solid #E0E0E0'
+                  border: '2px solid #E0E0E0',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
+                  userSelect: 'none'
                 }}
               >
                 {choice}
