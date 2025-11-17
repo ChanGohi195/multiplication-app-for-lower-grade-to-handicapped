@@ -283,7 +283,7 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
         <div className="text-center relative mt-8 md:mt-12">
           <div
             style={{
-              fontSize: '100px',
+              fontSize: '92px',
               color: '#333333',
               lineHeight: '1.1',
               fontWeight: 'bold'
@@ -333,8 +333,8 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
                     : ''
                 }`}
                 style={{
-                  height: '120px',
-                  fontSize: '35px',
+                  height: '110px',
+                  fontSize: '32px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
