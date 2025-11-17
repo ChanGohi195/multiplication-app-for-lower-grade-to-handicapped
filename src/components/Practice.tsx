@@ -333,8 +333,8 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
                     : ''
                 }`}
                 style={{
-                  height: '300px',
-                  fontSize: '60px',
+                  height: '150px',
+                  fontSize: '30px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
