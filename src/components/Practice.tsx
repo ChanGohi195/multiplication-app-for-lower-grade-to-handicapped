@@ -239,7 +239,7 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-between px-8 pb-8">
+      <div className="flex-1 flex flex-col items-center px-4 pb-4">
         {/* Timer */}
         <div className="mt-4 w-full max-w-[420px] md:max-w-[620px]">
           <div className="text-center mb-2">
@@ -252,10 +252,10 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
               のこり じかん
             </div>
           </div>
-          <div 
+          <div
             className="w-full rounded-full overflow-hidden"
-            style={{ 
-              height: '12px',
+            style={{
+              height: '8px',
               backgroundColor: '#E0E0E0'
             }}
           >
@@ -268,9 +268,9 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
             />
           </div>
           <div className="text-center mt-2">
-            <span 
-              style={{ 
-                fontSize: '24px',
+            <span
+              style={{
+                fontSize: '20px',
                 color: getTimeColor()
               }}
             >
@@ -280,12 +280,13 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
         </div>
 
         {/* Problem with Score Popup */}
-        <div className="text-center relative">
+        <div className="text-center relative mt-8 md:mt-12">
           <div
-            className="text-[40px] md:text-[55px]"
+            className="text-[50px] md:text-[100px]"
             style={{
               color: '#333333',
-              lineHeight: '1.2'
+              lineHeight: '1.1',
+              fontWeight: 'bold'
             }}
           >
             {dan} × {num2} = ?
@@ -309,14 +310,14 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
         </div>
 
         {/* Choices */}
-        <div className="w-full max-w-[360px] md:max-w-[700px] mt-8 md:mt-10">
-          <div className="grid grid-cols-2 gap-4 md:gap-5 mb-6">
+        <div className="w-full max-w-[380px] md:max-w-full mt-12 md:mt-16">
+          <div className="grid grid-cols-2 gap-4 md:gap-8 mb-4">
             {choices.map((choice, index) => (
               <button
                 key={index}
                 onClick={() => handleChoiceClick(choice)}
                 disabled={feedback !== 'none' || !isPlaying}
-                className={`rounded-2xl transition-all h-[100px] md:h-[140px] text-[32px] md:text-[48px] font-bold ${
+                className={`rounded-2xl transition-all h-[110px] md:h-[240px] text-[36px] md:text-[64px] font-bold ${
                   feedback === 'incorrect' && selectedChoice === choice
                     ? 'animate-wiggle'
                     : ''
