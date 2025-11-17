@@ -309,14 +309,14 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
         </div>
 
         {/* Choices */}
-        <div className="w-full max-w-[320px] md:max-w-[620px]">
-          <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="w-full max-w-[360px] md:max-w-[700px] mt-8 md:mt-10">
+          <div className="grid grid-cols-2 gap-4 md:gap-5 mb-6">
             {choices.map((choice, index) => (
               <button
                 key={index}
                 onClick={() => handleChoiceClick(choice)}
                 disabled={feedback !== 'none' || !isPlaying}
-                className={`rounded-2xl transition-all h-[80px] md:h-[100px] text-[28px] md:text-[36px] ${
+                className={`rounded-2xl transition-all h-[100px] md:h-[140px] text-[32px] md:text-[48px] font-bold ${
                   feedback === 'incorrect' && selectedChoice === choice
                     ? 'animate-wiggle'
                     : ''
