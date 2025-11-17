@@ -46,38 +46,57 @@ export function Login({ onLogin, onShowWelcome }: LoginProps) {
         return;
       }
 
-      // Try server registration (will fail if server is down)
+      // Try to register with Supabase (hybrid mode)
+      let userId: string;
+      let registeredNickname: string;
+      let isServerRegistration = false;
+
       try {
+        console.log('[Login] Attempting Supabase registration...');
         const { registerUser } = await import('../utils/api');
         const result = await registerUser(nickname.trim(), pin);
 
-        const userId = result.userId;
-        const userData = {
-          userId,
-          nickname: result.nickname,
-          pin: pin
-        };
-
-        // Save with nickname-based key
-        localStorage.setItem(`kuku-user-${nicknameKey}`, JSON.stringify(userData));
-
-        onShowWelcome(userId, result.nickname);
+        if (result && result.userId) {
+          // Supabase registration successful
+          console.log('[Login] ✓ Supabase registration successful:', result.userId);
+          userId = result.userId;
+          registeredNickname = result.nickname;
+          isServerRegistration = true;
+        } else {
+          throw new Error('Invalid server response');
+        }
       } catch (err) {
-        console.log('Server registration failed, using offline mode:', err);
-
-        // Fallback: Create user locally
-        const userId = crypto.randomUUID();
-        const userData = {
-          userId,
-          nickname: nickname.trim(),
-          pin: pin
-        };
-
-        // Save with nickname-based key
-        localStorage.setItem(`kuku-user-${nicknameKey}`, JSON.stringify(userData));
-
-        onShowWelcome(userId, nickname.trim());
+        // Supabase registration failed, use local fallback
+        console.warn('[Login] ✗ Supabase registration failed, using local fallback:', err);
+        userId = crypto.randomUUID();
+        registeredNickname = nickname.trim();
+        isServerRegistration = false;
       }
+
+      // Save to localStorage (regardless of Supabase success/failure)
+      const userData = {
+        userId,
+        nickname: registeredNickname,
+        pin: pin
+      };
+
+      console.log('[Login] Saving to localStorage:', `kuku-user-${nicknameKey}`);
+      localStorage.setItem(`kuku-user-${nicknameKey}`, JSON.stringify(userData));
+
+      // Initialize stats
+      const initialStats = {
+        todayCount: 0,
+        consecutiveDays: 0,
+        lastDate: new Date().toDateString(),
+        danMistakes: {},
+        totalScore: 0,
+        highScore: 0,
+        problemHistory: []
+      };
+      localStorage.setItem(`kuku-stats-${userId}`, JSON.stringify(initialStats));
+
+      console.log('[Login] Registration complete. Server:', isServerRegistration, 'UserId:', userId);
+      onShowWelcome(userId, registeredNickname);
     } catch (err) {
       console.error('Registration error:', err);
       setError('とうろくに しっぱい しました');

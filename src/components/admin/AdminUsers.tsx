@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Trash2, ArrowLeft } from 'lucide-react';
-import { getAllUsers, deleteUser, UserWithStats } from '../../utils/adminUtils';
+import { getAllUsers as getLocalUsers, deleteUser as deleteLocalUser, UserWithStats } from '../../utils/adminUtils';
+import * as api from '../../utils/api';
 import { UserDetailModal } from './UserDetailModal';
 import { UserEditModal } from './UserEditModal';
 
@@ -16,6 +17,8 @@ export function AdminUsers({ onBack }: AdminUsersProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -25,10 +28,65 @@ export function AdminUsers({ onBack }: AdminUsersProps) {
     filterUsers();
   }, [searchQuery, users]);
 
-  const loadUsers = () => {
-    const allUsers = getAllUsers();
-    setUsers(allUsers);
-    setFilteredUsers(allUsers);
+  const loadUsers = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    console.log('[AdminUsers] Loading users...');
+
+    // Always load from localStorage first
+    const localUsers = getLocalUsers();
+    console.log('[AdminUsers] LocalStorage users:', localUsers.length, 'users');
+
+    try {
+      // Try to fetch from Supabase
+      console.log('[AdminUsers] Fetching from Supabase API...');
+      const result = await api.getAllUsers();
+
+      console.log('[AdminUsers] API Response:', result);
+      console.log('[AdminUsers] Response type:', typeof result);
+      console.log('[AdminUsers] Has users array?', result && 'users' in result);
+      console.log('[AdminUsers] Is array?', result && Array.isArray(result.users));
+
+      if (result && Array.isArray(result.users)) {
+        console.log('[AdminUsers] ✓ Successfully loaded from Supabase:', result.users.length, 'users');
+
+        // Merge Supabase and localStorage users (remove duplicates)
+        const supabaseUsers = result.users;
+        const mergedUsers = [...supabaseUsers];
+
+        // Add local users that don't exist in Supabase
+        for (const localUser of localUsers) {
+          const existsInSupabase = supabaseUsers.some(su => su.userId === localUser.userId);
+          if (!existsInSupabase) {
+            console.log('[AdminUsers] Adding local-only user:', localUser.nickname);
+            mergedUsers.push(localUser);
+          }
+        }
+
+        console.log('[AdminUsers] Total merged users:', mergedUsers.length);
+        setUsers(mergedUsers);
+        setFilteredUsers(mergedUsers);
+
+        if (localUsers.length > supabaseUsers.length) {
+          setError(`${localUsers.length - supabaseUsers.length}件の ローカルのみの ユーザーが います。サーバーと どうき してください。`);
+        }
+      } else {
+        console.warn('[AdminUsers] ✗ Invalid response format:', result);
+        throw new Error('Invalid response from server');
+      }
+    } catch (err) {
+      console.error('[AdminUsers] ✗ Failed to load users from Supabase:', err);
+
+      // Use localStorage only
+      console.log('[AdminUsers] Using localStorage only:', localUsers.length, 'users');
+      setUsers(localUsers);
+      setFilteredUsers(localUsers);
+
+      setError('サーバーから ユーザーを よみこめませんでした。ローカルデータを ひょうじ しています。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filterUsers = () => {
@@ -52,14 +110,37 @@ export function AdminUsers({ onBack }: AdminUsersProps) {
     setShowDeleteConfirm(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (selectedUser) {
-      const success = deleteUser(selectedUser.userId, selectedUser.nickname);
+  const handleDeleteConfirm = async () => {
+    if (!selectedUser) return;
+
+    setIsLoading(true);
+
+    try {
+      // Try to delete from Supabase first
+      await api.deleteUser(selectedUser.userId);
+
+      // Also delete from localStorage
+      deleteLocalUser(selectedUser.userId, selectedUser.nickname);
+
+      // Reload users
+      await loadUsers();
+      setShowDeleteConfirm(false);
+      setSelectedUser(null);
+    } catch (err) {
+      console.error('Failed to delete user from Supabase:', err);
+
+      // Fallback: delete from localStorage only
+      const success = deleteLocalUser(selectedUser.userId, selectedUser.nickname);
       if (success) {
-        loadUsers();
+        await loadUsers();
         setShowDeleteConfirm(false);
         setSelectedUser(null);
+        setError('サーバーから さくじょ できませんでしたが、ローカルからは さくじょ しました。');
+      } else {
+        setError('ユーザーの さくじょに しっぱい しました。');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -129,6 +210,25 @@ export function AdminUsers({ onBack }: AdminUsersProps) {
           {filteredUsers.length}件のユーザー
         </p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="px-6 mb-4">
+          <div
+            className="p-4 rounded-xl"
+            style={{ backgroundColor: '#FFF3CD', border: '2px solid #F6C744' }}
+          >
+            <p style={{ fontSize: '14px', color: '#856404' }}>{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex justify-center py-8">
+          <div style={{ fontSize: '16px', color: '#666666' }}>読み込み中...</div>
+        </div>
+      )}
 
       {/* User List */}
       <div className="flex-1 px-6 pb-6 overflow-y-auto">

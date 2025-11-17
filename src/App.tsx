@@ -63,50 +63,55 @@ export default function App() {
       return;
     }
 
-    const savedUser = localStorage.getItem('kuku-user-v2');
-    if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
-      setScreen('home');
+    const currentUserNickname = localStorage.getItem('kuku-current-user');
+    if (currentUserNickname) {
+      const nicknameKey = currentUserNickname.toLowerCase();
+      const savedUserData = localStorage.getItem(`kuku-user-${nicknameKey}`);
 
-      // Load stats using user-specific key
-      const savedStats = localStorage.getItem(`kuku-stats-${parsedUser.userId}`);
-      if (savedStats) {
-        const parsed = JSON.parse(savedStats);
-        const today = new Date().toDateString();
+      if (savedUserData) {
+        const parsedUser = JSON.parse(savedUserData);
+        setUser(parsedUser);
+        setScreen('home');
 
-        if (parsed.lastDate === today) {
-          setStats(parsed);
-        } else {
-          // New day
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const wasYesterday = parsed.lastDate === yesterday.toDateString();
+        // Load stats using user-specific key
+        const savedStats = localStorage.getItem(`kuku-stats-${parsedUser.userId}`);
+        if (savedStats) {
+          const parsed = JSON.parse(savedStats);
+          const today = new Date().toDateString();
 
-          const newStats = {
-            todayCount: 0,
-            consecutiveDays: wasYesterday ? parsed.consecutiveDays + 1 : 1,
-            lastDate: today,
-            danMistakes: parsed.danMistakes || {},
-            totalScore: parsed.totalScore || 0,
-            highScore: parsed.highScore || 0,
-            problemHistory: parsed.problemHistory || []
-          };
-          setStats(newStats);
+          if (parsed.lastDate === today) {
+            setStats(parsed);
+          } else {
+            // New day
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const wasYesterday = parsed.lastDate === yesterday.toDateString();
 
-          // Sync to server
-          if (parsedUser.userId) {
-            syncStatsToServer(parsedUser.userId, newStats);
+            const newStats = {
+              todayCount: 0,
+              consecutiveDays: wasYesterday ? parsed.consecutiveDays + 1 : 1,
+              lastDate: today,
+              danMistakes: parsed.danMistakes || {},
+              totalScore: parsed.totalScore || 0,
+              highScore: parsed.highScore || 0,
+              problemHistory: parsed.problemHistory || []
+            };
+            setStats(newStats);
+
+            // Sync to server
+            if (parsedUser.userId) {
+              syncStatsToServer(parsedUser.userId, newStats);
+            }
           }
         }
       }
     }
   }, []);
 
-  // Save user to localStorage
+  // Save current user nickname to localStorage
   useEffect(() => {
     if (user) {
-      localStorage.setItem('kuku-user-v2', JSON.stringify(user));
+      localStorage.setItem('kuku-current-user', user.nickname);
     }
   }, [user]);
 
@@ -197,7 +202,7 @@ export default function App() {
     }
 
     // Only remove current user info, keep stats data
-    localStorage.removeItem('kuku-user-v2');
+    localStorage.removeItem('kuku-current-user');
     setUser(null);
     setStats({
       todayCount: 0,

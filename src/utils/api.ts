@@ -70,3 +70,27 @@ export async function verifyUserPin(userId: string, pin: string) {
     body: JSON.stringify({ userId, pin }),
   });
 }
+
+// Admin functions
+export async function getAllUsers() {
+  return fetchAPI('/admin/users', {
+    method: 'GET',
+  });
+}
+
+export async function deleteUser(userId: string) {
+  return fetchAPI(`/admin/users/${userId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function updateUser(userId: string, userData: {
+  nickname?: string;
+  grade?: string;
+  class?: string;
+}) {
+  return fetchAPI(`/admin/users/${userId}`, {
+    method: 'PUT',
+    body: JSON.stringify(userData),
+  });
+}
