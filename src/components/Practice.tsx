@@ -282,8 +282,8 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
         {/* Problem with Score Popup */}
         <div className="text-center relative mt-8 md:mt-12">
           <div
-            className="text-[50px] md:text-[100px]"
             style={{
+              fontSize: '100px',
               color: '#333333',
               lineHeight: '1.1',
               fontWeight: 'bold'
@@ -333,8 +333,8 @@ export function Practice({ onComplete, onBack, selectedDans, sessionId }: Practi
                     : ''
                 }`}
                 style={{
-                  height: '150px',
-                  fontSize: '30px',
+                  height: '120px',
+                  fontSize: '24px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
