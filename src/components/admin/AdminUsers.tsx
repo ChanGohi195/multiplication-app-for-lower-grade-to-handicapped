@@ -160,6 +160,63 @@ export function AdminUsers({ onBack }: AdminUsersProps) {
     setSelectedUser(null);
   };
 
+  const handleSync = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    console.log('[AdminUsers] Starting sync...');
+
+    try {
+      // Get current Supabase users
+      const result = await api.getAllUsers();
+      const supabaseUsers = (result && Array.isArray(result.users)) ? result.users : [];
+
+      // Get local users
+      const localUsers = getLocalUsers();
+
+      console.log('[AdminUsers] Supabase users:', supabaseUsers.length);
+      console.log('[AdminUsers] Local users:', localUsers.length);
+
+      // Find users that only exist in localStorage (by nickname)
+      const supabaseNicknames = new Set(supabaseUsers.map(u => u.nickname.toLowerCase()));
+      const localOnlyUsers = localUsers.filter(u =>
+        !supabaseNicknames.has(u.nickname.toLowerCase())
+      );
+
+      console.log('[AdminUsers] Local-only users:', localOnlyUsers.length, localOnlyUsers.map(u => u.nickname));
+
+      if (localOnlyUsers.length === 0) {
+        setError('どうき する ひつような ユーザーは いません。');
+        return;
+      }
+
+      // Sync each local-only user
+      const syncResults = await Promise.all(
+        localOnlyUsers.map(user => api.syncLocalUserToSupabase(user))
+      );
+
+      const successCount = syncResults.filter(r => r.success).length;
+      const failedUsers = syncResults.filter(r => !r.success);
+
+      console.log('[AdminUsers] Sync results:', { successCount, failed: failedUsers.length });
+
+      if (failedUsers.length > 0) {
+        console.error('[AdminUsers] Failed syncs:', failedUsers);
+        setError(`${successCount}件 どうき しました。${failedUsers.length}件 しっぱい しました。`);
+      } else {
+        setError(`${successCount}件の ユーザーを Supabase に どうき しました。`);
+      }
+
+      // Reload users
+      await loadUsers();
+    } catch (err) {
+      console.error('[AdminUsers] Sync failed:', err);
+      setError('どうき に しっぱい しました。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -180,7 +237,20 @@ export function AdminUsers({ onBack }: AdminUsersProps) {
         <h1 style={{ fontSize: '20px', color: '#333333', fontWeight: 'bold' }}>
           ユーザー管理
         </h1>
-        <div style={{ width: '24px' }} />
+        <button
+          onClick={handleSync}
+          disabled={isLoading}
+          className="px-3 py-1 rounded-lg active:scale-95 transition-transform"
+          style={{
+            backgroundColor: '#F6C744',
+            color: '#333333',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            opacity: isLoading ? 0.5 : 1
+          }}
+        >
+          同期
+        </button>
       </div>
 
       {/* Search */}

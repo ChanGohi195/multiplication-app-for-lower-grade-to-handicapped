@@ -94,3 +94,37 @@ export async function updateUser(userId: string, userData: {
     body: JSON.stringify(userData),
   });
 }
+
+// Sync function
+export interface SyncResult {
+  nickname: string;
+  success: boolean;
+  newUserId?: string;
+  error?: string;
+}
+
+export async function syncLocalUserToSupabase(user: {
+  userId: string;
+  nickname: string;
+  pin: string;
+}): Promise<SyncResult> {
+  try {
+    const result = await registerUser(user.nickname, user.pin);
+
+    if (result && result.userId) {
+      return {
+        nickname: user.nickname,
+        success: true,
+        newUserId: result.userId
+      };
+    } else {
+      throw new Error('Invalid server response');
+    }
+  } catch (err) {
+    return {
+      nickname: user.nickname,
+      success: false,
+      error: err instanceof Error ? err.message : 'Unknown error'
+    };
+  }
+}
