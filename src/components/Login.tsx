@@ -124,6 +124,41 @@ export function Login({ onLogin, onShowWelcome }: LoginProps) {
     try {
       const nicknameKey = nickname.trim().toLowerCase();
 
+      // Try server-side login first (cross-device)
+      try {
+        console.log('[Login] Attempting server relogin...');
+        const { loginUser } = await import('../utils/api');
+        const result = await loginUser(nickname.trim(), pin);
+
+        if (result && result.userId) {
+          const serverNickname = result.nickname || nickname.trim();
+          const userData = { userId: result.userId, nickname: serverNickname, pin };
+
+          // Cache locally for offline use
+          localStorage.setItem(`kuku-user-${nicknameKey}`, JSON.stringify(userData));
+
+          const statsKey = `kuku-stats-${result.userId}`;
+          if (!localStorage.getItem(statsKey)) {
+            const initialStats = {
+              todayCount: 0,
+              consecutiveDays: 0,
+              lastDate: new Date().toDateString(),
+              danMistakes: {},
+              totalScore: 0,
+              highScore: 0,
+              problemHistory: []
+            };
+            localStorage.setItem(statsKey, JSON.stringify(initialStats));
+          }
+
+          onLogin(result.userId, serverNickname);
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('[Login] Server relogin failed, fallback to local:', err);
+      }
+
       // Try to find user by nickname in localStorage
       const localUserData = localStorage.getItem(`kuku-user-${nicknameKey}`);
       console.log('Looking for user:', nickname.trim());

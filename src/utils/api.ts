@@ -71,6 +71,14 @@ export async function verifyUserPin(userId: string, pin: string) {
   });
 }
 
+// Server-side login by nickname + pin (for cross-device relogin)
+export async function loginUser(nickname: string, pin: string) {
+  return fetchAPI('/user/login', {
+    method: 'POST',
+    body: JSON.stringify({ nickname, pin }),
+  });
+}
+
 // Admin functions
 export async function getAllUsers() {
   return fetchAPI('/admin/users', {

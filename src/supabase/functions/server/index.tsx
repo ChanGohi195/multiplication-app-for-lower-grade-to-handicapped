@@ -200,4 +200,87 @@ app.post("/make-server-bd4de9a8/user/verify-pin", async (c) => {
   }
 });
 
+// Admin: list all users (for management UI)
+app.get("/make-server-bd4de9a8/admin/users", async (c) => {
+  try {
+    const users = await kv.getByPrefix("user:");
+    return c.json({ users });
+  } catch (error) {
+    console.log("Error fetching admin users:", error);
+    return c.json({ error: "Failed to fetch admin users" }, 500);
+  }
+});
+
+// Admin: update user metadata (nickname/grade/class)
+app.put("/make-server-bd4de9a8/admin/users/:userId", async (c) => {
+  try {
+    const userId = c.req.param("userId");
+    const updates = await c.req.json();
+    const existing = await kv.get(`user:${userId}`);
+
+    if (!existing) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    const updated = {
+      ...existing,
+      nickname: updates.nickname ?? existing.nickname,
+      grade: updates.grade ?? existing.grade,
+      class: updates.class ?? existing.class,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await kv.set(`user:${userId}`, updated);
+    return c.json({ success: true, user: updated });
+  } catch (error) {
+    console.log("Error updating user:", error);
+    return c.json({ error: "Failed to update user" }, 500);
+  }
+});
+
+// Admin: delete user
+app.delete("/make-server-bd4de9a8/admin/users/:userId", async (c) => {
+  try {
+    const userId = c.req.param("userId");
+    await kv.del(`user:${userId}`);
+    return c.json({ success: true });
+  } catch (error) {
+    console.log("Error deleting user:", error);
+    return c.json({ error: "Failed to delete user" }, 500);
+  }
+});
+
+// Server-side login to support cross-device relogin by nickname+pin
+app.post("/make-server-bd4de9a8/user/login", async (c) => {
+  try {
+    const { nickname, pin } = await c.req.json();
+
+    if (!nickname || !pin) {
+      return c.json({ error: "Nickname and PIN are required" }, 400);
+    }
+
+    const users = await kv.getByPrefix("user:");
+    const found = users.find(
+      (u) => u.nickname?.toLowerCase() === nickname.trim().toLowerCase(),
+    );
+
+    if (!found) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    if (found.pin !== pin) {
+      return c.json({ error: "Invalid PIN" }, 401);
+    }
+
+    return c.json({
+      success: true,
+      userId: found.userId,
+      nickname: found.nickname,
+    });
+  } catch (error) {
+    console.log("Error during server-side login:", error);
+    return c.json({ error: "Failed to login user" }, 500);
+  }
+});
+
 Deno.serve(app.fetch);
