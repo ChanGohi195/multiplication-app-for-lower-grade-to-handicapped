@@ -1,5 +1,5 @@
-const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-const publicAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID?.trim();
+const publicAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
 if (!projectId) {
   throw new Error('Missing VITE_SUPABASE_PROJECT_ID. Set it in your .env file.');
