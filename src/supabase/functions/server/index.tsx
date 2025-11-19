@@ -2,7 +2,7 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
-const app = new Hono();
+export const app = new Hono();
 
 // Enable logger
 app.use('*', logger(console.log));
@@ -283,4 +283,4 @@ app.post("/make-server-bd4de9a8/user/login", async (c) => {
   }
 });
 
-Deno.serve(app.fetch);
+export default app;
