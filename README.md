@@ -13,7 +13,6 @@
 
   Create a `.env` based on `.env.example` and set:
 
-  - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_PROJECT_ID`
   - `VITE_SUPABASE_ANON_KEY`
   - `VITE_ADMIN_PASSWORD`

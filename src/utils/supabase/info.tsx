@@ -11,8 +11,7 @@ function sanitizeEnv(name: string, value?: string) {
   return sanitized;
 }
 
-const supabaseUrl = sanitizeEnv('VITE_SUPABASE_URL', import.meta.env.VITE_SUPABASE_URL);
 const projectId = sanitizeEnv('VITE_SUPABASE_PROJECT_ID', import.meta.env.VITE_SUPABASE_PROJECT_ID);
 const publicAnonKey = sanitizeEnv('VITE_SUPABASE_ANON_KEY', import.meta.env.VITE_SUPABASE_ANON_KEY);
 
-export { supabaseUrl, projectId, publicAnonKey };
+export { projectId, publicAnonKey };
