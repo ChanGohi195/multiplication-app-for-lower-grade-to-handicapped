@@ -8,14 +8,4 @@
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
-
-  ## Environment
-
-  Create a `.env` based on `.env.example` and set:
-
-  - `VITE_SUPABASE_PROJECT_ID`
-  - `VITE_SUPABASE_ANON_KEY`
-  - `VITE_ADMIN_PASSWORD`
-
-  These values are required at build time but should never be committed to the repository.
   
